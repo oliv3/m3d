@@ -8,25 +8,24 @@
 -export([m3d1/3]).
 
 %% Macros
--define(SIZE,    10). %% TODO 100, 1000
--define(MAX,     lists:seq(0, ?SIZE-11)).
+-define(SIZE,    10). %% TODO 1000
 -define(FNAME,   "test.df3"). %% default filename
 -define(EXPVAL,  8).
 -define(MAXITER, 16#ffff).
 
--define(XMIN, -2.5).
--define(XMAX, +1.5).
--define(YMIN, -2.0).
--define(YMAX, +2.0).
--define(ZMIN, -2.0).
--define(ZMAX, +2.0).
+-define(XMIN, -1.5).
+-define(XMAX, +0.5).
+-define(YMIN, -1.0).
+-define(YMAX, +1.0).
+-define(ZMIN, -1.0).
+-define(ZMAX, +1.0).
 
 -define(DX, (?XMAX-?XMIN)/(?SIZE-1)).
 -define(DY, (?YMAX-?YMIN)/(?SIZE-1)).
 -define(DZ, (?ZMAX-?ZMIN)/(?SIZE-1)).
 
 -define(M_PI,   math:pi()).
--define(M_PI_2, ?M_PI/2).
+-define(M_PI_2, ?M_PI/2.0).
 
 
 start() ->
@@ -51,35 +50,33 @@ main(Fd) ->
     ?MSB(Fd, ?SIZE),
 
     %% Here we goooo !
-    zloop(Fd, ?ZMAX, ?SIZE),
-    ok.
+    zloop(Fd, ?ZMAX, ?SIZE).
 
 
 zloop(_Fd, _Z, 0) ->
     ok;
 zloop(Fd, Z, N) ->
-    yloop(Fd, ?YMIN, Z, ?SIZE, N-1),
+    io:format("Z= ~p~n", [N]),
+    yloop(Fd, ?YMAX, Z, ?SIZE),
     zloop(Fd, Z-?DZ, N-1).
 
 
-yloop(_Fd, _Y, _Z, 0, _LZ) ->
+yloop(_Fd, _Y, _Z, 0) ->
     ok;
-yloop(Fd, Y, Z, N, LZ) ->
+yloop(Fd, Y, Z, N) ->
     %% io:format("Z= ~p Y= ~p ", [LZ, N-1]),
     Refs = xloop(?XMAX, Y, Z),
     collect(Fd, Refs),
-    yloop(Fd, Y-?DY, Z, N-1, LZ).
+    yloop(Fd, Y-?DY, Z, N-1).
 
 
 xloop(X, Y, Z) ->
     xloop1({X, Y, Z}, [], ?SIZE).
 xloop1(_Point, Acc, 0) ->
-    %% io:format("~n", []),
     Acc;
 xloop1({X, Y, Z} = Point, Acc, N) ->
-    %% io:format("~p ", [N-1]),
     Ref = m3d(Point),
-    xloop1({X+?DX, Y, Z}, [Ref|Acc], N-1).
+    xloop1({X-?DX, Y, Z}, [Ref|Acc], N-1).
 
 
 m3d(Point) ->
@@ -88,17 +85,15 @@ m3d(Point) ->
     Ref.
 
 
-collect(Fd, Refs) ->
-    collect(Fd, Refs, []).
-collect(_Fd, [], Acc) ->
-    Acc;
-collect(Fd, [Ref|Refs], Acc) ->
+collect(_Fd, []) ->
+    ok;
+collect(Fd, [Ref|Refs]) ->
     receive
 	{Ref, Result} ->
 	    true = (Result >= 0),
 	    true = (Result =< ?MAXITER),
 	    ?MSB(Fd, Result),
-	    collect(Fd, Refs, [Result|Acc])
+	    collect(Fd, Refs)
     end.
 
 
