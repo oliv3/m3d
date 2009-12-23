@@ -75,10 +75,11 @@ m3d1(From, Ref, {X, Y, Z}) ->
     From ! {Ref, Iter}.
 
 
-yangle(X, Y, Z) when Z =:= 0.0 ->
+yangle(_X, _Y, _Z) when _Z =:= 0.0 ->
     ?M_PI_2;
 yangle(X, Y, Z) ->
-    math:atan2(math:sqrt(X*X + Y*Y), z).
+    math:atan2(math:sqrt(X*X + Y*Y), Z).
+
 
 zangle(X, Y) when X =:= 0.0 ->
     if
@@ -89,3 +90,13 @@ zangle(X, Y) when X =:= 0.0 ->
     end;
 zangle(X, Y) ->
     math:atan2(Y, X).
+
+
+-define(POW(X), math:pow(X, ?EXPVAL)).
+
+nx(Radius, Yangle, Zangle) ->
+    ?POW(Radius) * math:sin(Yangle*2+?M_PI_2) * math:cos(Zangle*2+?M_PI).
+ny(Radius, Yangle, Zangle) ->
+    ?POW(Radius) * math:sin(Yangle*2+?M_PI_2) * math:sin(Zangle*2+?M_PI).
+nz(Radius, Yangle, _Zangle) ->
+    ?POW(Radius) * math:cos(Yangle*2+?M_PI_2).
