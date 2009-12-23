@@ -8,9 +8,10 @@
 -export([m3d1/3]).
 
 %% Macros
--define(N,     10).
--define(MAX,   lists:seq(0, ?N-1)).
--define(FNAME, "test.df3"). %% default filename
+-define(SIZE,   10).
+-define(SIZEm1, (?SIZE-1)
+-define(MAX,    lists:seq(0, ?SIZEm1)).
+-define(FNAME,  "test.df3"). %% default filename
 
 
 -define(XMIN, -2.5).
@@ -19,6 +20,10 @@
 -define(YMAX, +2.0).
 -define(ZMIN, -2.0).
 -define(ZMAX, +2.0).
+
+-define(DX, (?XMAX-?XMIN)/?SIZEm1).
+-define(DY, (?YMAX-?YMIN)/?SIZEm1).
+-define(DZ, (?ZMAX-?ZMIN)/?SIZEm1).
 
 
 start() ->
