@@ -9,8 +9,7 @@
 
 %% Macros
 -define(SIZE,    10). %% TODO 100, 1000
--define(SIZEm1,  (?SIZE-1)
--define(MAX,     lists:seq(0, ?SIZEm1)).
+-define(MAX,     lists:seq(0, ?SIZE-11)).
 -define(FNAME,   "test.df3"). %% default filename
 -define(EXPVAL,  8).
 -define(MAXITER, 16#ffff).
@@ -22,9 +21,9 @@
 -define(ZMIN, -2.0).
 -define(ZMAX, +2.0).
 
--define(DX, (?XMAX-?XMIN)/?SIZEm1).
--define(DY, (?YMAX-?YMIN)/?SIZEm1).
--define(DZ, (?ZMAX-?ZMIN)/?SIZEm1).
+-define(DX, (?XMAX-?XMIN)/(?SIZE-1)).
+-define(DY, (?YMAX-?YMIN)/(?SIZE-1)).
+-define(DZ, (?ZMAX-?ZMIN)/(?SIZE-1)).
 
 -define(M_PI,   math:pi()).
 -define(M_PI_2, ?M_PI/2).
@@ -52,25 +51,54 @@ main(Fd) ->
     ?MSB(Fd, ?SIZE),
 
     %% Here we goooo !
-    %% xloop
+    zloop(Fd, ?ZMAX, ?SIZE),
     ok.
 
 
-m3d(X, Y, Z) ->
-    io:format("~p ~p ~p~n", [X, Y, Z]),
+zloop(_Fd, _Z, 0) ->
+    ok;
+zloop(Fd, Z, N) ->
+    yloop(Fd, ?YMIN, Z, ?SIZE, N-1),
+    zloop(Fd, Z-?DZ, N-1).
+
+
+yloop(_Fd, _Y, _Z, 0, _LZ) ->
+    ok;
+yloop(Fd, Y, Z, N, LZ) ->
+    %% io:format("Z= ~p Y= ~p ", [LZ, N-1]),
+    Refs = xloop(?XMAX, Y, Z),
+    collect(Fd, Refs),
+    yloop(Fd, Y-?DY, Z, N-1, LZ).
+
+
+xloop(X, Y, Z) ->
+    xloop1({X, Y, Z}, [], ?SIZE).
+xloop1(_Point, Acc, 0) ->
+    %% io:format("~n", []),
+    Acc;
+xloop1({X, Y, Z} = Point, Acc, N) ->
+    %% io:format("~p ", [N-1]),
+    Ref = m3d(Point),
+    xloop1({X+?DX, Y, Z}, [Ref|Acc], N-1).
+
+
+m3d(Point) ->
     Ref = make_ref(),
-    spawn(?MODULE, m3d1, [self(), Ref, {X, Y, Z}]),
+    spawn(?MODULE, m3d1, [self(), Ref, Point]),
     Ref.
 
 
-collect(Refs) ->
-    collect(Refs, []).
-collect([], Acc) ->
-    lists:reverse(Acc);
-collect([Ref|Refs], Acc) ->
+collect(Fd, Refs) ->
+    collect(Fd, Refs, []).
+collect(_Fd, [], Acc) ->
+    Acc;
+collect(Fd, [Ref|Refs], Acc) ->
     receive
 	{Ref, Result} ->
-	    collect(Refs, [Result|Acc])
+	    true = (Result >= 0),
+	    true = (Result =< ?MAXITER),
+	    ?MSB(Fd, Result),
+	    collect(Fd, Refs, [Result|Acc])
     end.
 
 
@@ -98,6 +126,7 @@ iter(Iter, {X, Y, Z}) ->
 	    Nz = nz(Radius, Yangle, Zangle),
 	    iter(Iter+1, {X+Nx, Y+Ny, Z+Nz})
     end.
+
 
 yangle(_X, _Y, _Z) when _Z =:= 0.0 ->
     ?M_PI_2;
