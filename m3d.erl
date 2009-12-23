@@ -12,6 +12,8 @@
 -define(MAX, lists:seq(0, ?N-1)).
 
 
+%% oliv3: relou l'ordre x/y/z ca oblige a faire
+%% un lists:reverse on peut pas faire autrement ?
 start() ->
     Refs = [m3d(X, Y, Z) || Z <- ?MAX,
 			    Y <- ?MAX,
