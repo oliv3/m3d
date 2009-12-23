@@ -8,11 +8,12 @@
 -export([m3d1/3]).
 
 %% Macros
--define(SIZE,   10).
--define(SIZEm1, (?SIZE-1)
--define(MAX,    lists:seq(0, ?SIZEm1)).
--define(FNAME,  "test.df3"). %% default filename
-
+-define(SIZE,    10). %% TODO 100, 1000
+-define(SIZEm1,  (?SIZE-1)
+-define(MAX,     lists:seq(0, ?SIZEm1)).
+-define(FNAME,   "test.df3"). %% default filename
+-define(EXPVAL,  8).
+-define(MAXITER, 16#ffff).
 
 -define(XMIN, -2.5).
 -define(XMAX, +1.5).
@@ -25,12 +26,15 @@
 -define(DY, (?YMAX-?YMIN)/?SIZEm1).
 -define(DZ, (?ZMAX-?ZMIN)/?SIZEm1).
 
+-define(M_PI,   math:pi()).
+-define(M_PI_2, ?M_PI/2).
+
 
 start() ->
     start(?FNAME).
 start(Filename) ->
     %% open file for writing
-    case file:open(Filename, [write, binary]) of
+    case file:open(Filename, [write, raw, binary]) of
 	{ok, Fd} ->
 	    main(Fd),
 	    file:close(Fd);
@@ -39,7 +43,12 @@ start(Filename) ->
     end.
 
 
+-define(MSB(Fd, Val), file:write(Fd, <<Val:32/big-unsigned-integer>>)).
+
 main(Fd) ->
+    ?MSB(Fd, ?SIZE),
+    ?MSB(Fd, ?SIZE),
+    ?MSB(Fd, ?SIZE),
     ok.
 
 
@@ -62,5 +71,21 @@ collect([Ref|Refs], Acc) ->
 
 
 m3d1(From, Ref, {X, Y, Z}) ->
-    %% Lame mandelbulb function
-    From ! {Ref, X * Y * Z}.
+    Iter = 0, %% iter(?MAXITER, X, Y, Z),
+    From ! {Ref, Iter}.
+
+
+yangle(X, Y, Z) when Z =:= 0.0 ->
+    ?M_PI_2;
+yangle(X, Y, Z) ->
+    math:atan2(math:sqrt(X*X + Y*Y), z).
+
+zangle(X, Y) when X =:= 0.0 ->
+    if
+	Y < 0 ->
+	    -?M_PI_2;
+	true ->
+	    ?M_PI_2
+    end;
+zangle(X, Y) ->
+    math:atan2(Y, X).
