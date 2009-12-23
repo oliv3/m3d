@@ -46,9 +46,13 @@ start(Filename) ->
 -define(MSB(Fd, Val), file:write(Fd, <<Val:32/big-unsigned-integer>>)).
 
 main(Fd) ->
+    %% .df3 header
     ?MSB(Fd, ?SIZE),
     ?MSB(Fd, ?SIZE),
     ?MSB(Fd, ?SIZE),
+
+    %% Here we goooo !
+    %% xloop
     ok.
 
 
@@ -70,10 +74,30 @@ collect([Ref|Refs], Acc) ->
     end.
 
 
-m3d1(From, Ref, {X, Y, Z}) ->
-    Iter = 0, %% iter(?MAXITER, X, Y, Z),
+m3d1(From, Ref, Point) ->
+    Iter = iter(Point),
     From ! {Ref, Iter}.
 
+
+iter(Point) ->
+    iter(0, Point).
+iter(?MAXITER, _Point) ->
+    ?MAXITER;
+iter(Iter, {X, Y, Z}) ->
+    XYZ2 = X*X + Y*Y + Z*Z,
+    if
+	XYZ2 >= 2.0 ->
+	    Iter;
+
+	true ->
+	    Radius = math:sqrt(XYZ2),
+	    Yangle = yangle(X, Y, Z),
+	    Zangle = zangle(X, Y),
+	    Nx = nx(Radius, Yangle, Zangle),
+	    Ny = ny(Radius, Yangle, Zangle),
+	    Nz = nz(Radius, Yangle, Zangle),
+	    iter(Iter+1, {X+Nx, Y+Ny, Z+Nz})
+    end.
 
 yangle(_X, _Y, _Z) when _Z =:= 0.0 ->
     ?M_PI_2;
