@@ -41,7 +41,7 @@ start(Filename) ->
     end.
 
 
--define(MSB(Fd, Val), file:write(Fd, <<Val:32/big-unsigned-integer>>)).
+-define(MSB(Fd, Val), file:write(Fd, <<Val:16/big-unsigned-integer>>)).
 
 main(Fd) ->
     %% .df3 header
