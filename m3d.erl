@@ -5,7 +5,7 @@
 -export([start/0]).
 
 %% Internal exports
--export([m3d1/5]).
+-export([m3d1/3]).
 
 %% Macros
 -define(N,   10).
@@ -26,7 +26,7 @@ start() ->
 m3d(X, Y, Z) ->
     %% io:format("~p ~p ~p~n", [X, Y, Z]),
     Ref = make_ref(),
-    spawn(?MODULE, m3d1, [self(), Ref, X, Y, Z]),
+    spawn(?MODULE, m3d1, [self(), Ref, {X, Y, Z}]),
     Ref.
 
 
@@ -41,6 +41,6 @@ collect([Ref|Refs], Acc) ->
     end.
 
 
-m3d1(From, Ref, X, Y, Z) ->
+m3d1(From, Ref, {X, Y, Z}) ->
     %% Lame mandelbulb function
     From ! {Ref, X * Y * Z}.
