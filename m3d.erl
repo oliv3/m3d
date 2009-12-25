@@ -165,11 +165,11 @@ zangle(X, Y) ->
 -define(POW(X), math:pow(X, ?EXPVAL)).
 
 nx(Radius, Yangle, Zangle) ->
-    ?POW(Radius) * math:sin(Yangle*2+?M_PI_2) * math:cos(Zangle*2+?M_PI).
+    ?POW(Radius) * math:sin(Yangle*?EXPVAL+?M_PI_2) * math:cos(Zangle*2+?M_PI).
 ny(Radius, Yangle, Zangle) ->
-    ?POW(Radius) * math:sin(Yangle*2+?M_PI_2) * math:sin(Zangle*2+?M_PI).
+    ?POW(Radius) * math:sin(Yangle*?EXPVAL+?M_PI_2) * math:sin(Zangle*2+?M_PI).
 nz(Radius, Yangle, _Zangle) ->
-    ?POW(Radius) * math:cos(Yangle*2+?M_PI_2).
+    ?POW(Radius) * math:cos(Yangle*?EXPVAL+?M_PI_2).
 
 
 %% 3D-points generator
