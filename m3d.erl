@@ -188,7 +188,7 @@ gen(State) ->
     after 0 ->
 	    receive
 		{Pid, Ref, get} ->
-		    {Point, NewState} = getx(State),
+		    {Point, NewState} = getz(State),
 		    Pid ! {Ref, Point},
 		    case NewState of
 			done ->
@@ -213,36 +213,37 @@ point() ->
     end.
 
 
-%% loop on x, y and z
-getx(#gs{i={XI, YI, ZI}, f={XF, YF, ZF}=Point} = State) ->
-    %% First, try to increment XI
-    XIp1 = XI+1,
+%% loop on z, y and x
+getz(#gs{i={XI, YI, ZI}, f={XF, YF, ZF}=Point} = State) ->
+    %% First, try to increment ZI
+    ZIp1 = ZI+1,
     if
-	XIp1 == ?SIZE -> %% X done
-	    gety(State#gs{i={0, YI, ZI}, f={?XMIN, YF, ZF}});
+	ZIp1 == ?SIZE -> %% Z done
+	    gety(State#gs{i={XI, YI, 0}, f={XF, YF, ?ZMIN}});
 	true ->
-	    {Point, State#gs{i={XIp1, YI, ZI}, f={XF+?DX, YF, ZF}}}
+	    {Point, State#gs{i={XI, YI, ZIp1}, f={XF, YF, ZF+?DZ}}}
     end.
 
-gety(#gs{i={_XI, YI, ZI}, f={XF, YF, ZF}=Point} = State) ->
+gety(#gs{i={XI, YI, _ZI}, f={XF, YF, ZF}=Point} = State) ->
     %% Then, try to increment YI
     YIp1 = YI+1,
     if
 	YIp1 == ?SIZE -> %% Y done
-	    getz(State#gs{i={0, 0, ZI}, f={?XMIN, ?YMIN, ZF}});
+	    getx(State#gs{i={XI, 0, 0}, f={XF, ?YMIN, ?ZMIN}});
 	true ->
-	    {Point, State#gs{i={0, YIp1, ZI}, f={XF, YF+?DY, ZF}}}
+	    {Point, State#gs{i={XI, YIp1, 0}, f={XF, YF+?DY, ZF}}}
     end.
 
-getz(#gs{i={_XI, _YI, ZI}, f={XF, YF, ZF}=Point} = State) ->
-    %% Finally, try to increment ZI
-    ZIp1 = ZI+1,
+getx(#gs{i={XI, _YI, _ZI}, f={XF, YF, ZF}=Point} = State) ->
+    %% Finally, try to increment XI (not the one from the Spiral Tribe)
+    XIp1 = XI+1,
     if
-	ZIp1 == ?SIZE -> %% Z done
+	XIp1 == ?SIZE -> %% X done
 	    {Point, done};
 	true ->
-	    {Point, State#gs{i={0, 0, ZIp1}, f={XF, YF, ZF+?DZ}}}
+	    {Point, State#gs{i={XIp1, 0, 0}, f={XF+?DX, YF, ZF}}}
     end.
+
 
 -ifdef(DEBUG).
 pp(#gs{i=Coord, f=Point}) ->
