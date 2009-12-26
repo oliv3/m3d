@@ -60,10 +60,10 @@ start(Filename) ->
 	    GenPid = spawn_link(?MODULE, gen0, [self()]),
 	    receive
 		started ->
-		    ok
-	    end,
-	    main(Fd, GenPid),
-	    file:close(Fd);
+		    main(Fd, GenPid),
+		    file:close(Fd)
+	    end;
+
 	Error ->
 	    exit(Error)
     end.
