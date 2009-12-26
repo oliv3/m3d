@@ -9,7 +9,7 @@
 -export([gen0/1, m3d/2]).
 
 %% Macros
--define(SIZE,     3).        %% TODO even more :p
+-define(SIZE,     3).          %% TODO even more :p
 -define(FNAME,    "test.df3"). %% default filename
 -define(EXPVAL,   8).          %% 2.0 to ..., TODO test with 1/... or -...
 -define(CORES,    4).
@@ -165,9 +165,9 @@ zangle(X, Y) ->
 -define(POW(X), math:pow(X, ?EXPVAL)).
 
 nx(Radius, Yangle, Zangle) ->
-    ?POW(Radius) * math:sin(Yangle*?EXPVAL+?M_PI_2) * math:cos(Zangle*2+?M_PI).
+    ?POW(Radius) * math:sin(Yangle*?EXPVAL+?M_PI_2) * math:cos(Zangle*?EXPVAL+?M_PI).
 ny(Radius, Yangle, Zangle) ->
-    ?POW(Radius) * math:sin(Yangle*?EXPVAL+?M_PI_2) * math:sin(Zangle*2+?M_PI).
+    ?POW(Radius) * math:sin(Yangle*?EXPVAL+?M_PI_2) * math:sin(Zangle*?EXPVAL+?M_PI).
 nz(Radius, Yangle, _Zangle) ->
     ?POW(Radius) * math:cos(Yangle*?EXPVAL+?M_PI_2).
 
