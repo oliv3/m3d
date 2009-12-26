@@ -143,6 +143,13 @@ yangle(X, Y, Z) ->
     math:atan2(math:sqrt(X*X + Y*Y), Z).
 
 
+zangle(X, Y) when X =:= 0.0 ->
+    if
+	Y < 0 ->
+	    -?M_PI_2;
+	true ->
+	    ?M_PI_2
+    end;
 zangle(X, Y) ->
     math:atan2(Y, X).
 
