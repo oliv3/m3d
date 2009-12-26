@@ -23,18 +23,12 @@
 -define(MAXITERb, 16#ff).
 -define(MSBb(Fd, Val), file:write(Fd, <<Val:8/big-unsigned-integer>>)).
 
-%% -define(XMIN, -2.5).
-%% -define(XMAX, +1.5).
-%% -define(YMIN, -2.0).
-%% -define(YMAX, +2.0).
-%% -define(ZMIN, -2.0).
-%% -define(ZMAX, +2.0).
--define(XMIN, -1.0).
--define(XMAX, +1.0).
--define(YMIN, -1.0).
--define(YMAX, +1.0).
--define(ZMIN, -1.0).
--define(ZMAX, +1.0).
+-define(XMIN, -2.5).
+-define(XMAX, +1.5).
+-define(YMIN, -2.0).
+-define(YMAX, +2.0).
+-define(ZMIN, -2.0).
+-define(ZMAX, +2.0).
 
 -define(DX, (?XMAX-?XMIN)/(?SIZE-1)).
 -define(DY, (?YMAX-?YMIN)/(?SIZE-1)).
@@ -208,6 +202,9 @@ point() ->
     Ref = make_ref(),
     ?GEN ! {self(), Ref, get},
     receive
+	{Ref, {X, Y, Z}} ->
+	    {Z, Y, X};
+
 	{Ref, Point} ->
 	    Point
     end.
