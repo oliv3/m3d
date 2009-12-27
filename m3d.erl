@@ -13,6 +13,7 @@
 -define(FNAME,    "test.df3"). %% default filename
 -define(EXPVAL,   8).          %% 2.0 to ..., TODO test with 1/... or -...
 -define(CORES,    4).
+-define(SIZE3,    ?SIZE*?SIZE*?SIZE).
 
 -define(MAXITERl, 16#ffffffff).
 -define(MSBl(Fd, Val), file:write(Fd, <<Val:32/big-unsigned-integer>>)).
@@ -126,7 +127,7 @@ iter(Iter, {X, Y, Z}) ->
     XYZ2 = X*X + Y*Y + Z*Z,
     if
 	XYZ2 >= 2.0 ->
-	    Iter;
+	    0;
 
 	true ->
 	    Radius = math:sqrt(XYZ2),
@@ -165,11 +166,12 @@ nz(Radius, Yangle, _Zangle) ->
 
 
 %% 3D-points generator
--record(gs, {i={0,0,0}, f={?XMIN, ?YMIN, ?ZMIN}}).
+-record(gs, {i={0,0,0}, f={?XMIN, ?YMIN, ?ZMIN}, count=0}).
 
 gen0(Parent) ->
     register(?GEN, self()),
     Parent ! started,
+    %% tick(),
     gen(#gs{}).
 gen(State) ->
     pp(State),
@@ -177,6 +179,7 @@ gen(State) ->
 	tick ->
 	    stats(State),
 	    gen(State)
+
     after 0 ->
 	    receive
 		{Pid, Ref, get} ->
@@ -185,15 +188,17 @@ gen(State) ->
 		    case NewState of
 			done ->
 			    done;
-			NewState ->
-			    gen(NewState)
+			#gs{count=Count} = NewState ->
+			    gen(NewState#gs{count=Count+1})
 		    end
 	    end
     end.
 
 
-stats(_State) ->
-    'TODO'.
+stats(#gs{count=C}) ->
+    R = C*100.0/?SIZE3, %%*100.0,
+    io:format("~p points (~p) ~p~n", [C, R, ?SIZE3]),
+    tick().
 
 
 point() ->
@@ -244,3 +249,8 @@ pp(#gs{i=Coord, f=Point}) ->
 pp(_) ->
     ok.
 -endif.
+
+-define(TICK, 30000). %% Stats every 30 seconds
+
+tick() ->
+    erlang:send_after(?TICK, ?GEN, tick).
