@@ -38,9 +38,8 @@
 -define(M_PI,   math:pi()).
 -define(M_PI_2, ?M_PI/2.0).
 
-%% -define(DEBUG, true).
-
 -ifdef(DEBUG).
+%% FIXME only 8bit check
 -define(CHECK(Val), ((true = (Val >= 0)) and (true = (Val =< ?MAXITERb)))).
 -else.
 -define(CHECK(Val), ok).
@@ -127,7 +126,7 @@ iter(Iter, {X, Y, Z}) ->
     XYZ2 = X*X + Y*Y + Z*Z,
     if
 	XYZ2 >= 2.0 ->
-	    0;
+	    result(Iter);
 
 	true ->
 	    Radius = math:sqrt(XYZ2),
@@ -195,8 +194,9 @@ gen(State) ->
     end.
 
 
+%% FIXME formatting
 stats(#gs{count=C}) ->
-    R = C*100.0/?SIZE3, %%*100.0,
+    R = C*100.0/?SIZE3,
     io:format("~p points (~p) ~p~n", [C, R, ?SIZE3]),
     tick().
 
@@ -212,7 +212,7 @@ point() ->
 
 %% loop on x, y and z
 getz(#gs{i={XI, YI, ZI}, f={XF, YF, ZF}=Point} = State) ->
-    %% First, try to increment XI
+    %% First, try to increment XI (not the one from Spiral Tribe)
     XIp1 = XI+1,
     if
 	XIp1 == ?SIZE -> %% X done
@@ -241,7 +241,7 @@ getx(#gs{i={_XI, _YI, ZI}, f={XF, YF, ZF}=Point} = State) ->
 	    {Point, State#gs{i={0, 0, ZIp1}, f={XF, YF, ZF+?DZ}}}
     end.
 
-
+%% pretty-print state for debug
 -ifdef(DEBUG).
 pp(#gs{i=Coord, f=Point}) ->
     io:format("~p: ~p~n", [Coord, Point]).
@@ -250,7 +250,19 @@ pp(_) ->
     ok.
 -endif.
 
--define(TICK, 30000). %% Stats every 30 seconds
 
+%% tick process for the stats
+-define(TICK, 30000). %% every 30 seconds
 tick() ->
     erlang:send_after(?TICK, ?GEN, tick).
+
+
+%% cloud mode
+-ifdef(cloud).
+result(Iter) ->
+    Iter.
+-else.
+%% isosurface mode
+result(_Iter) ->
+    0.
+-endif.
